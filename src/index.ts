@@ -9,11 +9,15 @@ function calculateProbability(lastPeriodDate: string): number {
 
   // Check if the current date falls within the fertile window
   const currentDate = DateTime.now();
-  if (currentDate >= startDate && currentDate <= endDate) {
-    return 0.15; // Example probability
-  } else {
-    return 0.02; // Example probability
+  if (currentDate < startDate || currentDate > endDate) {
+    return 0.02; // Probability outside the fertile window
   }
+
+  // Calculate the probability based on the day within the fertile window
+  const daysPassed = currentDate.diff(startDate, 'days').days;
+  const probability = 0.02 + (daysPassed * 0.02); // Example linear increase in probability
+
+  return Math.min(0.3, probability); // Maximum probability capped at 0.3 (30%)
 }
 
 // Create an instance of Express
