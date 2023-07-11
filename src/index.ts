@@ -1,5 +1,6 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import { DateTime } from 'luxon';
+import cors from 'cors';
 
 function calculateProbability(lastPeriodDate: string): number {
   // Calculate the start and end dates of the fertile window
@@ -18,8 +19,11 @@ function calculateProbability(lastPeriodDate: string): number {
 // Create an instance of Express
 const app = express();
 
+// Enable CORS for your frontend domain
+app.use(cors());
+
 // Define a route for calculating the probability of pregnancy
-app.get('/calculate-probability', (req: Request, res: Response) => {
+app.get('/calculate-probability', (req, res) => {
   const lastPeriodDate = req.query.lastPeriodDate as string;
 
   // Perform the necessary calculations here to determine the probability
