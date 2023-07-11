@@ -3,21 +3,32 @@ import { DateTime } from 'luxon';
 import cors from 'cors';
 
 function calculateProbability(lastPeriodDate: string): number {
-  // Calculate the start and end dates of the fertile window
-  const startDate = DateTime.fromISO(lastPeriodDate).plus({ days: 9 });
-  const endDate = DateTime.fromISO(lastPeriodDate).plus({ days: 19 });
-
-  // Check if the current date falls within the fertile window
   const currentDate = DateTime.now();
-  if (currentDate < startDate || currentDate > endDate) {
-    return 0.02; // Probability outside the fertile window
+
+  // Calculate the number of days since the last period
+  const daysSinceLastPeriod = currentDate.diff(DateTime.fromISO(lastPeriodDate), 'days').days;
+
+  // Adjust the probability based on the number of days since the last period
+  let probability = 0;
+
+  if (daysSinceLastPeriod < 0) {
+    // If the current date is before the last period, return a low probability
+    probability = 0.02;
+  } else if (daysSinceLastPeriod <= 7) {
+    // High probability immediately after the last period
+    probability = 0.3;
+  } else if (daysSinceLastPeriod <= 14) {
+    // Decreasing probability during the first half of the cycle
+    probability = 0.1 + (0.2 * (14 - daysSinceLastPeriod)) / 7;
+  } else if (daysSinceLastPeriod <= 21) {
+    // Increasing probability during the second half of the cycle
+    probability = 0.1 + (0.2 * (daysSinceLastPeriod - 14)) / 7;
+  } else {
+    // Low probability after day 21 of the cycle
+    probability = 0.02;
   }
 
-  // Calculate the probability based on the day within the fertile window
-  const daysPassed = currentDate.diff(startDate, 'days').days;
-  const probability = 0.02 + (daysPassed * 0.02); // Example linear increase in probability
-
-  return Math.min(0.3, probability); // Maximum probability capped at 0.3 (30%)
+  return probability;
 }
 
 // Create an instance of Express
